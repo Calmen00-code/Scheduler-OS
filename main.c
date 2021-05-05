@@ -24,20 +24,41 @@ char output[STR];   /* Buffer 2 */
 void *start_pp( void *arg )
 {
     char *fileName = NULL;
-    int size;
+    int size, wrt_size;
     Task *tasks = NULL;
     WriteTask *wrt_task = NULL;
+    char turnaround[STR], waiting[STR];
+    double ave_turnaround, ave_wait;
 
     fileName = (char*)arg;
     tasks = read_task(fileName);
+
     /* tasks is NULL when there is error reading file */
     if ( tasks != NULL ) {
         size = read_file_size(fileName);
         bubble_sort(tasks, size);
-        wrt_task = process(tasks, size);
+        wrt_size = size * WRITE_TASK_LIMIT;
+        wrt_task = process_srtf(tasks, size, wrt_size);
         free(tasks); tasks = NULL;
     }
-    wrt_size = size * WRITE_TASK_LIMIT;
+
+    /* Writing Gantt Chart */
+    gantt_chart_srtf(wrt_task, wrt_size, start_time, output);
+    strcat(output, "\n");
+
+    /* Calculate Average */
+    ave_turnaround = ave_turnaround_time_srtf(wrt_task, wrt_size);
+    ave_wait = ave_wait_time_srtf(wrt_task, wrt_size);
+
+    /* Writing Average Turnaround result */
+    sprintf(turnaround, "%s%f", "Average Turnaround Time: ", ave_turnaround);
+    strcat(output, turnaround);
+    strcat(output, "\n");
+
+    /* Writing Average Waiting result */
+    sprintf(waiting, "%s%f", "Average Waiting Time: ", ave_wait);
+    strcat(output, waiting);
+    strcat(output, "\n");
     return task;
 }
 
