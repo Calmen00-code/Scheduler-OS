@@ -23,36 +23,45 @@ char output[STR];   /* Buffer 2 */
 
 void *start_pp( void *arg )
 {
-    char *fileName = NULL;
-    int size, wrt_size;
-    Task *tasks = NULL;
-    WriteTask *wrt_task = NULL;
+    int size, wrt_size, start_time;
     char turnaround[STR], waiting[STR];
     double ave_turnaround, ave_wait;
+    char *fileName = NULL;
+    TaskPP *tasks = NULL;
+    WriteTask *wrt_task = NULL;
 
     fileName = (char*)arg;
     /* Read the file and create the tasks */
-    tasks = read_task(fileName);
+    tasks = read_task_pp(fileName);
 
     /* tasks is NULL when there is error reading file */
     /* Process the tasks */
     if ( tasks != NULL ) {
         size = read_file_size(fileName);
-        bubble_sort(tasks, size);
+        bubble_sort_pp(tasks, size);
         wrt_size = size * WRITE_TASK_LIMIT;
         wrt_task = process_pp(tasks, size, wrt_size);
+
+        /* Check if the first tasks did not start from 0 (Eg: 1,2,3...n) */
+        /* If first task did not start from 0, increment the flag_time */
+        if ( tasks[0].arrival > 0 ) {
+            /* The start time for wrt_task will be arrival time for first task */
+            start_time = tasks[0].arrival;
+        } else  /* Otherwise, the task is start at time 0 */
+            start_time = 0;
+
         free(tasks); tasks = NULL;
     }
 
     /* Writing Gantt Chart */
     pthread_mutex_lock(&buffer1_key);
-    gantt_chart_srtf(wrt_task, wrt_size, start_time);
+    gantt_chart(wrt_task, wrt_size, start_time);
     printf("\n");
     pthread_mutex_unlock(&buffer1_key);
 
     /* Calculate Average */
-    ave_turnaround = ave_turnaround_time_pp(wrt_task, wrt_size);
-    ave_wait = ave_wait_time_pp(wrt_task, wrt_size);
+    ave_turnaround = ave_turnaround_time(wrt_task, wrt_size);
+    ave_wait = ave_wait_time(wrt_task, wrt_size);
 
     /* Writing Average Turnaround result */
     sprintf(turnaround, "%s%f", "Average Turnaround Time: ", ave_turnaround);
@@ -65,40 +74,49 @@ void *start_pp( void *arg )
     strcat(output, "\n");
 
     /* Wakeup the parent thread */
-    pthread_cond_signal(&buffer1_cv, buffer1_key);
+    pthread_cond_signal(&buffer1_cv);
     return NULL;
 }
 
 void *start_srtf( void *arg )
 {
-    char *fileName = NULL;
-    int size, wrt_size;
-    Task *tasks = NULL;
-    WriteTask *wrt_task = NULL;
+    int size, wrt_size, start_time;
     char turnaround[STR], waiting[STR];
     double ave_turnaround, ave_wait;
+    char *fileName = NULL;
+    TaskSRTF *tasks = NULL;
+    WriteTask *wrt_task = NULL;
 
     fileName = (char*)arg;
-    tasks = read_task(fileName);
+    tasks = read_task_srtf(fileName);
 
     /* tasks is NULL when there is error reading file */
     if ( tasks != NULL ) {
         size = read_file_size(fileName);
-        bubble_sort(tasks, size);
+        bubble_sort_srtf(tasks, size);
         wrt_size = size * WRITE_TASK_LIMIT;
         wrt_task = process_srtf(tasks, size, wrt_size);
+
+        /* Check if the first tasks did not start from 0 (Eg: 1,2,3...n) */
+        /* If first task did not start from 0, increment the flag_time */
+        if ( tasks[0].arrival > 0 ) {
+            /* The start time for wrt_task will be arrival time for first task */
+            start_time = tasks[0].arrival;
+        } else  /* Otherwise, the task is start at time 0 */
+            start_time = 0;
+
         free(tasks); tasks = NULL;
     }
 
     /* Writing Gantt Chart */
     pthread_mutex_lock(&buffer1_key);
-    gantt_chart_srtf(wrt_task, wrt_size, start_time);
+    gantt_chart(wrt_task, wrt_size, start_time);
     printf("\n");
     pthread_mutex_unlock(&buffer1_key);
 
     /* Calculate Average */
-    ave_turnaround = ave_turnaround_time_srtf(wrt_task, wrt_size);
-    ave_wait = ave_wait_time_srtf(wrt_task, wrt_size);
+    ave_turnaround = ave_turnaround_time(wrt_task, wrt_size);
+    ave_wait = ave_wait_time(wrt_task, wrt_size);
 
     strcpy(output, "PP: ");
     
@@ -113,7 +131,7 @@ void *start_srtf( void *arg )
     strcat(output, "\n");
 
     /* Wakeup the parent thread */
-    pthread_cond_signal(&buffer1_cv, buffer1_key);
+    pthread_cond_signal(&buffer1_cv);
     return NULL;
 }
 
@@ -130,7 +148,7 @@ void *parent_thread( void *arg )
 
     /* Block parent threads and wait for thread 1 and thread 2 */
     if ( strcmp( input, "" ) != 0 )
-        pthread_cond_wait(&buffer1_cv, buffer1_key);   
+        pthread_cond_wait(&buffer1_cv, &buffer1_key);   
 
     printf("%s\n", output);
     return arg;
@@ -152,15 +170,15 @@ int main()
             stop = TRUE;
         else {
             /* Creating Parent Thread */
-            result_code = pthread_create(&thread[0], NULL, parent_thread, input);
+            result_code = pthread_create(&threads[0], NULL, parent_thread, input);
             assert(!result_code);
 
             /* Call thread 1 */
-            result_code = pthread_create(&thread[1], NULL, start_pp, &input);
+            result_code = pthread_create(&threads[1], NULL, start_pp, &input);
             assert(!result_code);
             
             /* Call thread 2 */
-            result_code = pthread_create(&thread[2], NULL, start_srtf, &input);
+            result_code = pthread_create(&threads[2], NULL, start_srtf, &input);
             assert(!result_code);
 
             printf("\n");

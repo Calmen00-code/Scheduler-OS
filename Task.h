@@ -4,13 +4,13 @@
 #include "header.h" /* To allow the usage of STR */
 
 /* Array of Task to be created */
-typedef struct TaskPriority {
+typedef struct TaskPP {
     int arrival;        /* Arrival time of the task */
     int burst;          /* Burst time of the task */
     int priority;       /* Lower integer indicates higher priority */
     char label[STR];    /* Eg: P1, P2 ... Pn */
     int status;         /* Status of the task in CPU (Eg: Done) */
-} TaskPriority;
+} TaskPP;
 
 /* Array of Task to be created */
 typedef struct TaskSRTF {

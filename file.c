@@ -15,10 +15,10 @@
  * This function initialises every fields of the Task Array
  * Reading the file for Priority Scheduling
  */
-Task* read_task_pp( char filename[] )
+TaskPP* read_task_pp( char filename[] )
 {
     FILE *readPtr = NULL;
-    Task *tasks = NULL;
+    TaskPP *tasks = NULL;
     int i, size;
     int arrival_time, burst_time, priority;
     char process_label[STR];
@@ -31,7 +31,7 @@ Task* read_task_pp( char filename[] )
     else {
         /* Determining the size of the Task Array */
         size = read_file_size( filename );  
-        tasks = calloc(sizeof(Task), size);
+        tasks = calloc(sizeof(TaskPP), size);
 
         i = 0;
         while ( fscanf(readPtr, "%d %d %d\n", &arrival_time, 
@@ -54,10 +54,10 @@ Task* read_task_pp( char filename[] )
  * This function initialises every fields of the Task Array
  * Reading the file for Shortest Remaining Job Time Scheduling
  */
-Task* read_task_srtf( char filename[] )
+TaskSRTF* read_task_srtf( char filename[] )
 {
     FILE *readPtr = NULL;
-    Task *tasks = NULL;
+    TaskSRTF *tasks = NULL;
     int i, size;
     int arrival_time, burst_time;
     char process_label[STR];
@@ -70,7 +70,7 @@ Task* read_task_srtf( char filename[] )
     else {
         /* Determining the size of the Task Array */
         size = read_file_size( filename );  
-        tasks = calloc(sizeof(Task), size);
+        tasks = calloc(sizeof(TaskSRTF), size);
 
         i = 0;
         while ( fscanf(readPtr, "%d %d\n", &arrival_time, 

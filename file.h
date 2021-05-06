@@ -3,7 +3,8 @@
 
 #include "Task.h"
 
-Task* read_task( char filename[] );
+TaskPP* read_task_pp( char filename[] );
+TaskSRTF* read_task_srtf( char filename[] );
 int read_file_size( char filename[] );
 
 #endif
