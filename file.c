@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
+#include <pthread.h>
+#include <unistd.h>
 #include "file.h"
 
 /**
@@ -27,6 +30,7 @@ TaskPP* read_task_pp( char filename[] )
     readPtr = fopen(filename, "r");
     if ( readPtr == NULL ) {
         perror("Error while reading file");
+        exit(0);
     }
     else {
         /* Determining the size of the Task Array */
@@ -59,13 +63,14 @@ TaskSRTF* read_task_srtf( char filename[] )
     FILE *readPtr = NULL;
     TaskSRTF *tasks = NULL;
     int i, size;
-    int arrival_time, burst_time;
+    int arrival_time, burst_time, priority;
     char process_label[STR];
     char p_label = 'P';
 
     readPtr = fopen(filename, "r");
     if ( readPtr == NULL ) {
         perror("Error while reading file");
+        exit(0);
     }
     else {
         /* Determining the size of the Task Array */
@@ -73,8 +78,8 @@ TaskSRTF* read_task_srtf( char filename[] )
         tasks = calloc(sizeof(TaskSRTF), size);
 
         i = 0;
-        while ( fscanf(readPtr, "%d %d\n", &arrival_time, 
-                       &burst_time ) != EOF )
+        while ( fscanf(readPtr, "%d %d %d\n", &arrival_time, 
+                       &burst_time, &priority ) != EOF )
         {
             tasks[i].arrival = arrival_time;
             tasks[i].burst = burst_time;

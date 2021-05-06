@@ -14,13 +14,12 @@
 /**
  * Main function to run the scheduling PP Algorithm
  */
-WriteTask* process_pp( TaskPriority *tasks, int task_size, int wrt_size )
+WriteTask* process_pp( TaskPP *tasks, int task_size, int wrt_size )
 {
-    int flag_time, total_burst_time, i, ii, start_time;
+    int flag_time, total_burst_time, i, ii;
     int curr_arrival, total_idle_time, idle_time;
-    double ave_turnaround, ave_wait;
     char space[STR];
-    TaskPriority *running_task;
+    TaskPP *running_task;
     WriteTask *wrt_task;
 
     /* Allocation of wrt_task */
@@ -31,29 +30,19 @@ WriteTask* process_pp( TaskPriority *tasks, int task_size, int wrt_size )
         wrt_task[ii].status = UNWRITTEN;
     }
 
-    total_burst_time = sum_burst(tasks, task_size);
-
-    /* Check if the first tasks did not start from 0 (Eg: 1,2,3...n) */
-    /* If first task did not start from 0, increment the flag_time */
-    flag_time = 0;
-    if ( tasks[0].arrival > 0 ) {
-        flag_time = tasks[0].arrival;
-        /* The start time for wrt_task will be arrival time for first task */
-        start_time = flag_time;  
-    } else  /* Otherwise, the task is start at time 0 */
-        start_time = 0;
+    total_burst_time = sum_burst_pp(tasks, task_size);
 
     /* Selecting process to be allocated in the CPU from time to time */
-    i = 0; total_idle_time = 0;
+    i = 0; total_idle_time = 0; flag_time = 0;
     while ( flag_time < total_burst_time ) {
-        if ( hasProcess( tasks, task_size, flag_time ) == TRUE ) {
-            running_task = priority(flag_time, tasks, task_size); 
-            CPU(tasks, task_size, running_task, &wrt_task[i], &flag_time);
+        if ( hasProcessPP( tasks, task_size, flag_time ) == TRUE ) {
+            running_task = priority_pp(flag_time, tasks, task_size); 
+            CPU_PP(tasks, task_size, running_task, &wrt_task[i], &flag_time);
         } else {
             idle_time = 0;
             curr_arrival = flag_time;
             /* Append spaces everytime when there was no process found */
-            while ( hasProcess( tasks, task_size, flag_time ) == FALSE ) {
+            while ( hasProcessPP( tasks, task_size, flag_time ) == FALSE ) {
                 strcat(space, " ");
                 ++flag_time;
             }
@@ -76,7 +65,7 @@ WriteTask* process_pp( TaskPriority *tasks, int task_size, int wrt_size )
 /**
  * Return TRUE if there are processes arrived from 0 to flag_time
  */
-int hasProcessPP( TaskPriority *tasks, int task_size, int flag_time )
+int hasProcessPP( TaskPP *tasks, int task_size, int flag_time )
 {
     int i, exist;
 
@@ -97,12 +86,12 @@ int hasProcessPP( TaskPriority *tasks, int task_size, int flag_time )
  *
  * Purpoose: Return the highest priority task for all the tasks starting from 0 to flag_time
  */
-TaskPriority* priority_pp( int flag_time, TaskPriority *tasks, int task_size )
+TaskPP* priority_pp( int flag_time, TaskPP *tasks, int task_size )
 {
     int i, j, k, pr, idx;
     int pr_idx;         /* Highest priority index for undone task */
     int *undone_idx;    /* Indexes for all undone tasks */
-    TaskPriority *ret_task;
+    TaskPP *ret_task;
 
     /* Setup the undone_idx */
     undone_idx = calloc(sizeof(int), task_size);
@@ -154,7 +143,7 @@ TaskPriority* priority_pp( int flag_time, TaskPriority *tasks, int task_size )
  *
  * Purpose: Performs burst_time decrement on the running_task
  */
-void CPU_PP( TaskPriority *tasks, int task_size, TaskPriority *running_task, 
+void CPU_PP( TaskPP *tasks, int task_size, TaskPP *running_task, 
              WriteTask *wrt_task, int *flag_time )
 {
     int stop = FALSE;
@@ -169,7 +158,7 @@ void CPU_PP( TaskPriority *tasks, int task_size, TaskPriority *running_task,
         *flag_time = *flag_time + 1; 
 
         /* Check if the newly arrived process will preempt current process */
-        if ( isPreempt(tasks, task_size, 
+        if ( isPreemptPP(tasks, task_size, 
                        *flag_time, running_task ) == TRUE ) {
             stop = TRUE;
         }
@@ -186,7 +175,7 @@ void CPU_PP( TaskPriority *tasks, int task_size, TaskPriority *running_task,
  * Compare the priority of the newly arrived process and 
  * return TRUE if newly arrived process had higher priority
  */
-int isPreemptPP( TaskPriority *tasks, int task_size, int curr_time, TaskPriority *running_task )
+int isPreemptPP( TaskPP *tasks, int task_size, int curr_time, TaskPP *running_task )
 {
     int i, j, ii;
     int *undone_idx, idx;
@@ -222,7 +211,7 @@ int isPreemptPP( TaskPriority *tasks, int task_size, int curr_time, TaskPriority
 }
 
 /* Return sum of the burst time of tasks */
-int sum_burst_pp( Task *tasks, int task_size )
+int sum_burst_pp( TaskPP *tasks, int task_size )
 {
     int i;
     int sum = 0;

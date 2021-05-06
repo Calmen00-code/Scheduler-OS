@@ -32,7 +32,7 @@ WriteTask* process_srtf( TaskSRTF *tasks, int task_size, int wrt_size )
     total_burst_time = sum_burst_srtf(tasks, task_size);
 
     /* Selecting process to be allocated in the CPU from time to time */
-    i = 0; total_idle_time = 0;
+    i = 0; total_idle_time = 0; flag_time = 0;
     while ( flag_time < total_burst_time ) {
         if ( hasProcessSRTF( tasks, task_size, flag_time ) == TRUE ) {
             running_task = priority_srtf(flag_time, tasks, task_size); 

@@ -5,6 +5,8 @@
  */
 
 #include <stdio.h>
+#include <string.h>
+#include "Task.h"
 
 /** 
  * Operation to print the gantt chart of the process 
