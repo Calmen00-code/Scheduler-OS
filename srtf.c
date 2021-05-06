@@ -257,8 +257,7 @@ int next_preempt( TaskSRTF *tasks, int task_size,
 /** 
  * Operation to print the gantt chart of the process 
  */
-void gantt_chart( WriteTask *wrt_task, int wrt_size, 
-                  int start_time, char *output )
+void gantt_chart( WriteTask *wrt_task, int wrt_size, int start_time )
 { 
     int i, j, idx;
 
@@ -274,20 +273,19 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size,
             else 
                 idx = 0;
             for ( j = wrt_task[idx].turnaround; j < wrt_task[i].turnaround; ++j )
-                sprintf(output, "%s", "---");
+                printf("---");
         }
     }
-    sprintf(output, "%s", "\n");
+    printf("\n");
 
     if ( start_time > 0 )
-        sprintf(output, "%s", "  ");
+        printf("  ");
     /* Printing the Process Label */
     for ( i = 0; i < wrt_size; ++i ) {
         /* The size of wrt_task is set bigger than actual in advance
            Therefore, a status to check if it was WRITTEN is needed */
         if ( wrt_task[i].status == WRITTEN ) {
-            strcat(output, "|");
-            sprintf(output, "%s", wrt_task[i].label);
+            printf("|%s", wrt_task[i].label);
 
             /* Printing space based on distance between 
                previous and current burst time */
@@ -296,11 +294,11 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size,
             else 
                 idx = 0;
             for ( j = wrt_task[idx].turnaround; j < wrt_task[i].turnaround; ++j ) 
-                sprintf(output, "%s", " ");
+                printf(" ");
         }
     }
-    sprintf(output, "%s", "|");    /* Closing Bracket for last Process */
-    sprintf(output, "%s", "\n");
+    printf("|");    /* Closing Bracket for last Process */
+    printf("\n");
 
     /* Printing the bottom line of the gantt chart */
     for ( i = 0; i < wrt_size; ++i ) {
@@ -314,14 +312,14 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size,
             else 
                 idx = 0;
             for ( j = wrt_task[idx].turnaround; j < wrt_task[i].turnaround; ++j )
-                sprintf(output, "%s", "---");
+                printf("---");
         }
     }
-    sprintf(output, "%s", "\n");
+    printf("\n");
 
     if ( start_time > 0 )
-        sprintf(output, "%s", "0 ");
-    sprintf(output, "%d", start_time);
+        printf("0 ");
+    printf("%d", start_time);
     for ( i = 0; i < wrt_size; ++i ) {
         /* The size of wrt_task is set bigger than actual in advance
            Therefore, a status to check if it was WRITTEN is needed */
@@ -333,11 +331,11 @@ void gantt_chart( WriteTask *wrt_task, int wrt_size,
             else 
                 idx = 0;
             for ( j = wrt_task[idx].turnaround; j < wrt_task[i].turnaround; ++j )
-                sprintf(output, "%s", " ");
-            sprintf(output, " %d ", wrt_task[i].turnaround);
+                printf(" ");
+            printf(" %d ", wrt_task[i].turnaround);
         }
     }
-    sprintf(output, "%s", "\n");
+    printf("\n");
 }
 
 /**
